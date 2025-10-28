@@ -1,0 +1,1504 @@
+<!DOCTYPE html>
+<html lang="en">
+<head>
+    <meta charset="UTF-8">
+    <meta name="viewport" content="width=device-width, initial-scale=1.0">
+    <title>E-Commerce API Test Environment</title>
+    <style>
+        * {
+            margin: 0;
+            padding: 0;
+            box-sizing: border-box;
+        }
+
+        body {
+            font-family: 'Segoe UI', Tahoma, Geneva, Verdana, sans-serif;
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            min-height: 100vh;
+            padding: 20px;
+        }
+
+        .container {
+            max-width: 1400px;
+            margin: 0 auto;
+            background: white;
+            border-radius: 15px;
+            box-shadow: 0 20px 40px rgba(0,0,0,0.1);
+            overflow: hidden;
+        }
+
+        .header {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            padding: 30px;
+            text-align: center;
+        }
+
+        .header h1 {
+            font-size: 2.5rem;
+            margin-bottom: 10px;
+        }
+
+        .header p {
+            font-size: 1.1rem;
+            opacity: 0.9;
+        }
+
+        .main-content {
+            display: grid;
+            grid-template-columns: 1fr 1fr;
+            gap: 0;
+            min-height: 80vh;
+        }
+
+        .sidebar {
+            background: #f8f9fa;
+            padding: 30px;
+            border-right: 1px solid #e9ecef;
+        }
+
+        .content {
+            padding: 30px;
+            max-height: 80vh;
+            overflow-y: auto;
+        }
+
+        .section {
+            margin-bottom: 30px;
+            background: white;
+            border-radius: 10px;
+            padding: 25px;
+            box-shadow: 0 5px 15px rgba(0,0,0,0.08);
+            border-left: 4px solid #667eea;
+        }
+
+        .section h3 {
+            color: #333;
+            margin-bottom: 20px;
+            font-size: 1.3rem;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .section-icon {
+            width: 24px;
+            height: 24px;
+            background: #667eea;
+            border-radius: 50%;
+            display: flex;
+            align-items: center;
+            justify-content: center;
+            color: white;
+            font-size: 12px;
+            font-weight: bold;
+        }
+
+        .form-group {
+            margin-bottom: 20px;
+        }
+
+        .form-group label {
+            display: block;
+            margin-bottom: 8px;
+            font-weight: 600;
+            color: #555;
+        }
+
+        .form-group input,
+        .form-group select,
+        .form-group textarea {
+            width: 100%;
+            padding: 12px;
+            border: 2px solid #e9ecef;
+            border-radius: 8px;
+            font-size: 14px;
+            transition: border-color 0.3s;
+        }
+
+        .form-group input:focus,
+        .form-group select:focus,
+        .form-group textarea:focus {
+            outline: none;
+            border-color: #667eea;
+        }
+
+        .form-group textarea {
+            resize: vertical;
+            min-height: 80px;
+        }
+
+        .btn {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+            color: white;
+            border: none;
+            padding: 12px 25px;
+            border-radius: 8px;
+            cursor: pointer;
+            font-size: 14px;
+            font-weight: 600;
+            transition: transform 0.2s, box-shadow 0.2s;
+            margin-right: 10px;
+            margin-bottom: 10px;
+        }
+
+        .btn:hover {
+            transform: translateY(-2px);
+            box-shadow: 0 5px 15px rgba(102, 126, 234, 0.4);
+        }
+
+        .btn-secondary {
+            background: #6c757d;
+        }
+
+        .btn-danger {
+            background: #dc3545;
+        }
+
+        .btn-success {
+            background: #28a745;
+        }
+
+        .btn-primary {
+            background: linear-gradient(135deg, #667eea 0%, #764ba2 100%);
+        }
+
+        .auth-section {
+            background: linear-gradient(135deg, #28a745 0%, #20c997 100%);
+            color: white;
+            margin-bottom: 20px;
+        }
+
+        .auth-section h3 {
+            color: white;
+        }
+
+        .auth-section .form-group label {
+            color: rgba(255,255,255,0.9);
+        }
+
+        .auth-section input {
+            background: rgba(255,255,255,0.1);
+            border-color: rgba(255,255,255,0.3);
+            color: white;
+        }
+
+        .auth-section input::placeholder {
+            color: rgba(255,255,255,0.7);
+        }
+
+        .response-section {
+            background: #f8f9fa;
+            border-radius: 10px;
+            padding: 20px;
+            margin-top: 20px;
+            border-left: 4px solid #28a745;
+        }
+
+        .response-section h4 {
+            color: #333;
+            margin-bottom: 15px;
+            display: flex;
+            align-items: center;
+            gap: 10px;
+        }
+
+        .response-content {
+            background: #2d3748;
+            color: #e2e8f0;
+            padding: 20px;
+            border-radius: 8px;
+            font-family: 'Courier New', monospace;
+            font-size: 13px;
+            line-height: 1.5;
+            overflow-x: auto;
+            white-space: pre-wrap;
+            max-height: 400px;
+            overflow-y: auto;
+        }
+
+        .status-indicator {
+            display: inline-block;
+            width: 12px;
+            height: 12px;
+            border-radius: 50%;
+            margin-right: 8px;
+        }
+
+        .status-success {
+            background: #28a745;
+        }
+
+        .status-error {
+            background: #dc3545;
+        }
+
+        .status-pending {
+            background: #ffc107;
+        }
+
+        .token-display {
+            background: #e3f2fd;
+            border: 1px solid #2196f3;
+            border-radius: 8px;
+            padding: 15px;
+            margin: 15px 0;
+            font-family: 'Courier New', monospace;
+            font-size: 12px;
+            word-break: break-all;
+        }
+
+        .nav-tabs {
+            display: flex;
+            background: #f8f9fa;
+            border-radius: 10px 10px 0 0;
+            overflow: hidden;
+        }
+
+        .nav-tab {
+            flex: 1;
+            padding: 15px;
+            background: #e9ecef;
+            border: none;
+            cursor: pointer;
+            font-weight: 600;
+            transition: background 0.3s;
+        }
+
+        .nav-tab.active {
+            background: white;
+            color: #667eea;
+        }
+
+        .tab-content {
+            display: none;
+        }
+
+        .tab-content.active {
+            display: block;
+        }
+
+        .endpoint-info {
+            background: #e3f2fd;
+            border-left: 4px solid #2196f3;
+            padding: 15px;
+            margin-bottom: 20px;
+            border-radius: 0 8px 8px 0;
+        }
+
+        .endpoint-info .method {
+            display: inline-block;
+            padding: 4px 8px;
+            border-radius: 4px;
+            font-size: 12px;
+            font-weight: bold;
+            margin-right: 10px;
+        }
+
+        .method-get { background: #28a745; color: white; }
+        .method-post { background: #007bff; color: white; }
+        .method-put { background: #ffc107; color: black; }
+        .method-delete { background: #dc3545; color: white; }
+        .method-patch { background: #6f42c1; color: white; }
+
+        .quick-actions {
+            display: flex;
+            gap: 10px;
+            flex-wrap: wrap;
+            margin-bottom: 20px;
+        }
+
+        .quick-btn {
+            background: #17a2b8;
+            color: white;
+            border: none;
+            padding: 8px 15px;
+            border-radius: 6px;
+            cursor: pointer;
+            font-size: 12px;
+            font-weight: 600;
+        }
+
+        .quick-btn:hover {
+            background: #138496;
+        }
+
+        /* Hide field groups by default */
+        .auth-fields,
+        .product-fields,
+        .query-fields,
+        .cart-fields,
+        .order-fields,
+        .checkout-fields,
+        .admin-fields {
+            display: none;
+        }
+
+        @media (max-width: 768px) {
+            .main-content {
+                grid-template-columns: 1fr;
+            }
+            
+            .sidebar {
+                border-right: none;
+                border-bottom: 1px solid #e9ecef;
+            }
+        }
+    </style>
+</head>
+<body>
+    <div class="container">
+        <div class="header">
+            <h1>🛒 E-Commerce API Test Environment</h1>
+            <p>Test all your API endpoints with a beautiful interface</p>
+        </div>
+
+        <div class="main-content">
+            <div class="sidebar">
+                <div class="unified-form-section">
+                    <h3><span class="section-icon">🚀</span>API Test Form</h3>
+                    
+                    <!-- Base Configuration -->
+                    <div class="form-group">
+                        <label>Base URL</label>
+                        <input type="text" id="baseUrl" value="http://localhost:3000/api" placeholder="http://localhost:3000/api">
+                    </div>
+
+                    <!-- Action Selector -->
+                    <div class="form-group">
+                        <label>Select Action</label>
+                        <select id="actionSelector" onchange="toggleFormFields()">
+                            <optgroup label="Authentication">
+                                <option value="register">Register User</option>
+                                <option value="login">Login User</option>
+                                <option value="getProfile">Get Profile</option>
+                                <option value="logout">Logout</option>
+                            </optgroup>
+                            <optgroup label="Products">
+                                <option value="getProducts">Get All Products</option>
+                                <option value="getProduct">Get Single Product</option>
+                                <option value="createProduct">Create Product</option>
+                                <option value="updateProduct">Update Product</option>
+                                <option value="deleteProduct">Delete Product</option>
+                                <option value="getCategories">Get Categories</option>
+                            </optgroup>
+                            <optgroup label="Cart">
+                                <option value="getCart">Get Cart</option>
+                                <option value="addToCart">Add to Cart</option>
+                                <option value="updateCartItem">Update Cart Item</option>
+                                <option value="removeFromCart">Remove from Cart</option>
+                                <option value="clearCart">Clear Cart</option>
+                            </optgroup>
+                            <optgroup label="Orders">
+                                <option value="getOrders">Get Orders</option>
+                                <option value="getOrder">Get Single Order</option>
+                                <option value="checkout">Checkout</option>
+                                <option value="processPayment">Process Payment</option>
+                            </optgroup>
+                            <optgroup label="Admin">
+                                <option value="getDashboard">Get Dashboard</option>
+                                <option value="getAllUsers">Get All Users</option>
+                                <option value="getAllProducts">Get All Products (Admin)</option>
+                                <option value="getAllOrders">Get All Orders (Admin)</option>
+                                <option value="getAdminOrder">Get Order Details (Admin)</option>
+                                <option value="updateOrderStatus">Update Order Status</option>
+                            </optgroup>
+                        </select>
+                    </div>
+
+                    <!-- Authentication Fields -->
+                    <div class="form-group auth-fields">
+                        <label>Email</label>
+                        <input type="email" id="authEmail" placeholder="user@example.com">
+                    </div>
+
+                    <div class="form-group auth-fields">
+                        <label>Password</label>
+                        <input type="password" id="authPassword" placeholder="password">
+                    </div>
+
+                    <div class="form-group auth-fields">
+                        <label>Role</label>
+                        <select id="authRole">
+                            <option value="USER" selected>USER</option>
+                            <option value="ADMIN">ADMIN</option>
+                        </select>
+                    </div>
+
+                    <!-- Product Fields -->
+                    <div class="form-group product-fields">
+                        <label>Product ID</label>
+                        <input type="text" id="productId" placeholder="Product ID">
+                    </div>
+
+                    <div class="form-group product-fields">
+                        <label>Product Name</label>
+                        <input type="text" id="productName" placeholder="Product Name">
+                    </div>
+
+                    <div class="form-group product-fields">
+                        <label>Description</label>
+                        <textarea id="productDescription" placeholder="Product Description"></textarea>
+                    </div>
+
+                    <div class="form-group product-fields">
+                        <label>Price</label>
+                        <input type="number" id="productPrice" placeholder="0.00" step="0.01">
+                    </div>
+
+                    <div class="form-group product-fields">
+                        <label>Category</label>
+                        <input type="text" id="productCategory" placeholder="Category">
+                    </div>
+
+                    <div class="form-group product-fields">
+                        <label>Stock</label>
+                        <input type="number" id="productStock" placeholder="0">
+                    </div>
+
+                    <div class="form-group product-fields">
+                        <label>Image URL</label>
+                        <input type="url" id="productImage" placeholder="https://example.com/image.jpg">
+                    </div>
+
+                    <!-- Query Fields -->
+                    <div class="form-group query-fields">
+                        <label>Page</label>
+                        <input type="number" id="queryPage" value="1" min="1">
+                    </div>
+
+                    <div class="form-group query-fields">
+                        <label>Limit</label>
+                        <input type="number" id="queryLimit" value="10" min="1" max="100">
+                    </div>
+
+                    <div class="form-group query-fields">
+                        <label>Search</label>
+                        <input type="text" id="querySearch" placeholder="Search...">
+                    </div>
+
+                    <div class="form-group query-fields">
+                        <label>Min Price</label>
+                        <input type="number" id="queryMinPrice" placeholder="0">
+                    </div>
+
+                    <div class="form-group query-fields">
+                        <label>Max Price</label>
+                        <input type="number" id="queryMaxPrice" placeholder="1000">
+                    </div>
+
+                    <div class="form-group query-fields">
+                        <label>Sort By</label>
+                        <select id="querySort">
+                            <option value="createdAt">Created Date</option>
+                            <option value="price">Price</option>
+                            <option value="name">Name</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group query-fields">
+                        <label>Order</label>
+                        <select id="queryOrder">
+                            <option value="desc">Descending</option>
+                            <option value="asc">Ascending</option>
+                        </select>
+                    </div>
+
+                    <!-- Cart Fields -->
+                    <div class="form-group cart-fields">
+                        <label>Product ID</label>
+                        <input type="text" id="cartProductId" placeholder="Product ID">
+                    </div>
+
+                    <div class="form-group cart-fields">
+                        <label>Quantity</label>
+                        <input type="number" id="cartQuantity" placeholder="1" min="1">
+                    </div>
+
+                    <!-- Order Fields -->
+                    <div class="form-group order-fields">
+                        <label>Order ID</label>
+                        <input type="text" id="orderId" placeholder="Order ID">
+                    </div>
+
+                    <div class="form-group order-fields">
+                        <label>Status</label>
+                        <select id="orderStatus">
+                            <option value="">All Statuses</option>
+                            <option value="PENDING_PAYMENT">Pending Payment</option>
+                            <option value="PAID">Paid</option>
+                            <option value="SHIPPED">Shipped</option>
+                            <option value="DELIVERED">Delivered</option>
+                            <option value="CANCELLED">Cancelled</option>
+                        </select>
+                    </div>
+
+                    <!-- Checkout Fields -->
+                    <div class="form-group checkout-fields">
+                        <label>Payment Method</label>
+                        <select id="paymentMethod">
+                            <option value="CREDIT_CARD">Credit Card</option>
+                            <option value="DEBIT_CARD">Debit Card</option>
+                            <option value="PAYPAL">PayPal</option>
+                            <option value="BANK_TRANSFER">Bank Transfer</option>
+                        </select>
+                    </div>
+
+                    <div class="form-group checkout-fields">
+                        <label>Notes</label>
+                        <textarea id="checkoutNotes" placeholder="Order notes..."></textarea>
+                    </div>
+
+                    <!-- Shipping Address Fields -->
+                    <div class="form-group checkout-fields">
+                        <label>Street Address</label>
+                        <input type="text" id="shippingStreet" placeholder="123 Main St">
+                    </div>
+
+                    <div class="form-group checkout-fields">
+                        <label>City</label>
+                        <input type="text" id="shippingCity" placeholder="New York">
+                    </div>
+
+                    <div class="form-group checkout-fields">
+                        <label>State</label>
+                        <input type="text" id="shippingState" placeholder="NY">
+                    </div>
+
+                    <div class="form-group checkout-fields">
+                        <label>ZIP Code</label>
+                        <input type="text" id="shippingZip" placeholder="10001">
+                    </div>
+
+                    <div class="form-group checkout-fields">
+                        <label>Country</label>
+                        <input type="text" id="shippingCountry" placeholder="USA">
+                    </div>
+
+                    <!-- Admin Fields -->
+                    <div class="form-group admin-fields">
+                        <label>User ID</label>
+                        <input type="text" id="adminUserId" placeholder="User ID">
+                    </div>
+
+                    <!-- Execute Button -->
+                    <button class="btn btn-primary" onclick="executeAction()" style="width: 100%; margin-top: 20px;">
+                        Execute Action
+                    </button>
+
+                    <!-- Token Display -->
+                    <div id="tokenDisplay" class="token-display" style="display: none;">
+                        <strong>Token:</strong> <span id="tokenValue"></span>
+                    </div>
+                </div>
+
+                <div class="quick-actions">
+                    <button class="quick-btn" onclick="clearResponse()">Clear Response</button>
+                    <button class="quick-btn" onclick="exportCollection()">Export Collection</button>
+                    <button class="quick-btn" onclick="loadSampleData()">Load Sample Data</button>
+                </div>
+            </div>
+
+            <div class="content">
+                <div class="response-section">
+                    <h4>
+                        <span class="status-indicator status-pending" id="statusIndicator"></span>
+                        API Response
+                    </h4>
+                    <div class="response-content" id="responseContent">Ready to test APIs...</div>
+                </div>
+            </div>
+        </div>
+    </div>
+
+    <script>
+        let authToken = null;
+
+        // Field visibility configuration
+        const fieldVisibility = {
+            'register': ['auth-fields'],
+            'login': ['auth-fields'],
+            'getProfile': [],
+            'logout': [],
+            'getProducts': ['query-fields'],
+            'getProduct': ['product-fields'],
+            'createProduct': ['product-fields'],
+            'updateProduct': ['product-fields'],
+            'deleteProduct': ['product-fields'],
+            'getCategories': [],
+            'getCart': [],
+            'addToCart': ['cart-fields'],
+            'updateCartItem': ['cart-fields'],
+            'removeFromCart': ['cart-fields'],
+            'clearCart': [],
+            'getOrders': ['query-fields', 'order-fields'],
+            'getOrder': ['order-fields'],
+            'checkout': ['checkout-fields'],
+            'processPayment': ['order-fields'],
+            'getDashboard': [],
+            'getAllUsers': ['query-fields'],
+            'getAllProducts': ['query-fields'],
+            'getAllOrders': ['query-fields', 'order-fields', 'admin-fields'],
+            'getAdminOrder': ['order-fields'],
+            'updateOrderStatus': ['order-fields']
+        };
+
+        // Toggle form fields based on selected action
+        function toggleFormFields() {
+            const selectedAction = document.getElementById('actionSelector').value;
+            const allFieldGroups = ['auth-fields', 'product-fields', 'query-fields', 'cart-fields', 'order-fields', 'checkout-fields', 'admin-fields'];
+            
+            // Hide all field groups
+            allFieldGroups.forEach(group => {
+                const elements = document.querySelectorAll(`.${group}`);
+                elements.forEach(element => {
+                    element.style.display = 'none';
+                });
+            });
+            
+            // Show relevant field groups
+            if (fieldVisibility[selectedAction]) {
+                fieldVisibility[selectedAction].forEach(group => {
+                    const elements = document.querySelectorAll(`.${group}`);
+                    elements.forEach(element => {
+                        element.style.display = 'block';
+                    });
+                });
+            }
+        }
+
+        // Execute the selected action
+        async function executeAction() {
+            const action = document.getElementById('actionSelector').value;
+            
+            switch(action) {
+                case 'register': await register(); break;
+                case 'login': await login(); break;
+                case 'getProfile': await getProfile(); break;
+                case 'logout': await logout(); break;
+                case 'getProducts': await getProducts(); break;
+                case 'getProduct': await getProduct(); break;
+                case 'createProduct': await createProduct(); break;
+                case 'updateProduct': await updateProduct(); break;
+                case 'deleteProduct': await deleteProduct(); break;
+                case 'getCategories': await getCategories(); break;
+                case 'getCart': await getCart(); break;
+                case 'addToCart': await addToCart(); break;
+                case 'updateCartItem': await updateCartItem(); break;
+                case 'removeFromCart': await removeFromCart(); break;
+                case 'clearCart': await clearCart(); break;
+                case 'getOrders': await getOrders(); break;
+                case 'getOrder': await getOrder(); break;
+                case 'checkout': await checkout(); break;
+                case 'processPayment': await processPayment(); break;
+                case 'getDashboard': await getDashboard(); break;
+                case 'getAllUsers': await getAllUsers(); break;
+                case 'getAllProducts': await getAllProducts(); break;
+                case 'getAllOrders': await getAllOrders(); break;
+                case 'getAdminOrder': await getAdminOrder(); break;
+                case 'updateOrderStatus': await updateOrderStatus(); break;
+                default: showResponse({ status: 'error', message: 'Unknown action' });
+            }
+        }
+
+        // Utility functions
+        function getBaseUrl() {
+            return document.getElementById('baseUrl').value;
+        }
+
+        function getAuthHeaders() {
+            const headers = {
+                'Content-Type': 'application/json'
+            };
+            if (authToken) {
+                headers['Authorization'] = `Bearer ${authToken}`;
+            }
+            return headers;
+        }
+
+        function showResponse(data) {
+            const responseContent = document.getElementById('responseContent');
+            const statusIndicator = document.getElementById('statusIndicator');
+            
+            responseContent.innerHTML = `<pre>${JSON.stringify(data, null, 2)}</pre>`;
+            
+            // Update status indicator
+            statusIndicator.className = 'status-indicator status-success';
+            statusIndicator.textContent = '✓';
+        }
+
+        function showError(error) {
+            const responseContent = document.getElementById('responseContent');
+            const statusIndicator = document.getElementById('statusIndicator');
+            
+            responseContent.innerHTML = `<pre>${JSON.stringify(error, null, 2)}</pre>`;
+            
+            // Update status indicator
+            statusIndicator.className = 'status-indicator status-error';
+            statusIndicator.textContent = '✗';
+        }
+
+        function clearResponse() {
+            document.getElementById('responseContent').innerHTML = 'Ready to test APIs...';
+            document.getElementById('statusIndicator').className = 'status-indicator status-pending';
+            document.getElementById('statusIndicator').textContent = '⏳';
+        }
+
+        // Authentication functions
+        async function register() {
+            try {
+                const role = document.getElementById('authRole').value;
+                console.log('Registering with role:', role); // Debug log
+                
+                const response = await fetch(`${getBaseUrl()}/auth/register`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        name: document.getElementById('authEmail').value.split('@')[0],
+                        email: document.getElementById('authEmail').value,
+                        password: document.getElementById('authPassword').value,
+                        role: role
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.data.token;
+                    document.getElementById('tokenDisplay').style.display = 'block';
+                    document.getElementById('tokenValue').textContent = authToken;
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function login() {
+            try {
+                const response = await fetch(`${getBaseUrl()}/auth/login`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        email: document.getElementById('authEmail').value,
+                        password: document.getElementById('authPassword').value
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = data.data.token;
+                    document.getElementById('tokenDisplay').style.display = 'block';
+                    document.getElementById('tokenValue').textContent = authToken;
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function getProfile() {
+            try {
+                console.log('Getting profile with token:', authToken ? 'Present' : 'Missing'); // Debug log
+                const response = await fetch(`${getBaseUrl()}/auth/me`, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function logout() {
+            try {
+                const response = await fetch(`${getBaseUrl()}/auth/logout`, {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    authToken = null;
+                    document.getElementById('tokenDisplay').style.display = 'none';
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        // Product functions
+        async function getProducts() {
+            try {
+                const params = new URLSearchParams();
+                const page = document.getElementById('queryPage').value;
+                const limit = document.getElementById('queryLimit').value;
+                const search = document.getElementById('querySearch').value;
+                const category = document.getElementById('productCategory').value;
+                const minPrice = document.getElementById('queryMinPrice').value;
+                const maxPrice = document.getElementById('queryMaxPrice').value;
+                const sort = document.getElementById('querySort').value;
+                const order = document.getElementById('queryOrder').value;
+
+                if (page) params.append('page', page);
+                if (limit) params.append('limit', limit);
+                if (search) params.append('search', search);
+                if (category) params.append('category', category);
+                if (minPrice) params.append('minPrice', minPrice);
+                if (maxPrice) params.append('maxPrice', maxPrice);
+                if (sort) params.append('sort', sort);
+                if (order) params.append('order', order);
+
+                const response = await fetch(`${getBaseUrl()}/products?${params}`, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function getProduct() {
+            try {
+                const productId = document.getElementById('productId').value;
+                if (!productId) {
+                    showError({ status: 'error', message: 'Product ID is required' });
+                    return;
+                }
+
+                const response = await fetch(`${getBaseUrl()}/products/${productId}`, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function createProduct() {
+            try {
+                const response = await fetch(`${getBaseUrl()}/products`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        name: document.getElementById('productName').value,
+                        description: document.getElementById('productDescription').value,
+                        price: parseFloat(document.getElementById('productPrice').value),
+                        category: document.getElementById('productCategory').value,
+                        stock: parseInt(document.getElementById('productStock').value),
+                        imageUrl: document.getElementById('productImage').value
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function updateProduct() {
+            try {
+                const productId = document.getElementById('productId').value;
+                if (!productId) {
+                    showError({ status: 'error', message: 'Product ID is required' });
+                    return;
+                }
+
+                const updateData = {};
+                if (document.getElementById('productName').value) updateData.name = document.getElementById('productName').value;
+                if (document.getElementById('productDescription').value) updateData.description = document.getElementById('productDescription').value;
+                if (document.getElementById('productPrice').value) updateData.price = parseFloat(document.getElementById('productPrice').value);
+                if (document.getElementById('productCategory').value) updateData.category = document.getElementById('productCategory').value;
+                if (document.getElementById('productStock').value) updateData.stock = parseInt(document.getElementById('productStock').value);
+                if (document.getElementById('productImage').value) updateData.imageUrl = document.getElementById('productImage').value;
+
+                const response = await fetch(`${getBaseUrl()}/products/${productId}`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify(updateData)
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function deleteProduct() {
+            try {
+                const productId = document.getElementById('productId').value;
+                if (!productId) {
+                    showError({ status: 'error', message: 'Product ID is required' });
+                    return;
+                }
+
+                const response = await fetch(`${getBaseUrl()}/products/${productId}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function getCategories() {
+            try {
+                const response = await fetch(`${getBaseUrl()}/products/categories`, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        // Cart functions
+        async function getCart() {
+            try {
+                console.log('Getting cart with token:', authToken ? 'Present' : 'Missing'); // Debug log
+                const response = await fetch(`${getBaseUrl()}/cart`, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function addToCart() {
+            try {
+                const productId = document.getElementById('cartProductId').value;
+                const quantity = document.getElementById('cartQuantity').value;
+                
+                if (!productId || !quantity) {
+                    showError({ status: 'error', message: 'Product ID and Quantity are required' });
+                    return;
+                }
+
+                const response = await fetch(`${getBaseUrl()}/cart/items`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        productId: productId,
+                        quantity: parseInt(quantity)
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function updateCartItem() {
+            try {
+                const productId = document.getElementById('cartProductId').value;
+                const quantity = document.getElementById('cartQuantity').value;
+                
+                if (!productId || !quantity) {
+                    showError({ status: 'error', message: 'Product ID and Quantity are required' });
+                    return;
+                }
+
+                const response = await fetch(`${getBaseUrl()}/cart/items/${productId}`, {
+                    method: 'PUT',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        quantity: parseInt(quantity)
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function removeFromCart() {
+            try {
+                const productId = document.getElementById('cartProductId').value;
+                
+                if (!productId) {
+                    showError({ status: 'error', message: 'Product ID is required' });
+                    return;
+                }
+
+                const response = await fetch(`${getBaseUrl()}/cart/items/${productId}`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function clearCart() {
+            try {
+                const response = await fetch(`${getBaseUrl()}/cart`, {
+                    method: 'DELETE',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        // Order functions
+        async function getOrders() {
+            try {
+                const params = new URLSearchParams();
+                const page = document.getElementById('queryPage').value;
+                const limit = document.getElementById('queryLimit').value;
+                const status = document.getElementById('orderStatus').value;
+
+                if (page) params.append('page', page);
+                if (limit) params.append('limit', limit);
+                if (status) params.append('status', status);
+
+                const response = await fetch(`${getBaseUrl()}/orders?${params}`, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function getOrder() {
+            try {
+                const orderId = document.getElementById('orderId').value;
+                if (!orderId) {
+                    showError({ status: 'error', message: 'Order ID is required' });
+                    return;
+                }
+
+                const response = await fetch(`${getBaseUrl()}/orders/${orderId}`, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function checkout() {
+            try {
+                const response = await fetch(`${getBaseUrl()}/orders/checkout`, {
+                    method: 'POST',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        shippingAddress: {
+                            street: document.getElementById('shippingStreet').value,
+                            city: document.getElementById('shippingCity').value,
+                            state: document.getElementById('shippingState').value,
+                            zipCode: document.getElementById('shippingZip').value,
+                            country: document.getElementById('shippingCountry').value
+                        },
+                        paymentMethod: document.getElementById('paymentMethod').value,
+                        notes: document.getElementById('checkoutNotes').value
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function processPayment() {
+            try {
+                const orderId = document.getElementById('orderId').value;
+                if (!orderId) {
+                    showError({ status: 'error', message: 'Order ID is required' });
+                    return;
+                }
+
+                const response = await fetch(`${getBaseUrl()}/orders/${orderId}/pay`, {
+                    method: 'POST',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        // Admin functions
+        async function getDashboard() {
+            try {
+                const response = await fetch(`${getBaseUrl()}/admin/dashboard`, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function getAllUsers() {
+            try {
+                const params = new URLSearchParams();
+                const page = document.getElementById('queryPage').value;
+                const limit = document.getElementById('queryLimit').value;
+
+                if (page) params.append('page', page);
+                if (limit) params.append('limit', limit);
+
+                const response = await fetch(`${getBaseUrl()}/admin/users?${params}`, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function getAllProducts() {
+            try {
+                const params = new URLSearchParams();
+                const page = document.getElementById('queryPage').value;
+                const limit = document.getElementById('queryLimit').value;
+
+                if (page) params.append('page', page);
+                if (limit) params.append('limit', limit);
+
+                const response = await fetch(`${getBaseUrl()}/admin/products?${params}`, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function getAllOrders() {
+            try {
+                const params = new URLSearchParams();
+                const page = document.getElementById('queryPage').value;
+                const limit = document.getElementById('queryLimit').value;
+                const status = document.getElementById('orderStatus').value;
+                const userId = document.getElementById('adminUserId').value;
+
+                if (page) params.append('page', page);
+                if (limit) params.append('limit', limit);
+                if (status) params.append('status', status);
+                if (userId) params.append('userId', userId);
+
+                const response = await fetch(`${getBaseUrl()}/admin/orders?${params}`, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function getAdminOrder() {
+            try {
+                const orderId = document.getElementById('orderId').value;
+                if (!orderId) {
+                    showError({ status: 'error', message: 'Order ID is required' });
+                    return;
+                }
+
+                const response = await fetch(`${getBaseUrl()}/admin/orders/${orderId}`, {
+                    method: 'GET',
+                    headers: getAuthHeaders()
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        async function updateOrderStatus() {
+            try {
+                const orderId = document.getElementById('orderId').value;
+                const status = document.getElementById('orderStatus').value;
+                
+                if (!orderId || !status) {
+                    showError({ status: 'error', message: 'Order ID and Status are required' });
+                    return;
+                }
+
+                const response = await fetch(`${getBaseUrl()}/admin/orders/${orderId}/status`, {
+                    method: 'PATCH',
+                    headers: getAuthHeaders(),
+                    body: JSON.stringify({
+                        status: status
+                    })
+                });
+
+                const data = await response.json();
+                
+                if (response.ok) {
+                    showResponse(data);
+                } else {
+                    showError(data);
+                }
+            } catch (error) {
+                showError({ status: 'error', message: error.message });
+            }
+        }
+
+        // Utility functions
+        function exportCollection() {
+            const collection = {
+                info: {
+                    name: "E-Commerce API Collection",
+                    description: "Complete API collection for E-Commerce application"
+                },
+                item: [
+                    {
+                        name: "Authentication",
+                        item: [
+                            {
+                                name: "Register",
+                                request: {
+                                    method: "POST",
+                                    header: [{"key": "Content-Type", "value": "application/json"}],
+                                    url: {
+                                        raw: "{{baseUrl}}/auth/register",
+                                        host: ["{{baseUrl}}"],
+                                        path: ["auth", "register"]
+                                    },
+                                    body: {
+                                        mode: "raw",
+                                        raw: JSON.stringify({
+                                            name: "Test User",
+                                            email: "test@example.com",
+                                            password: "password123",
+                                            role: "USER"
+                                        })
+                                    }
+                                }
+                            },
+                            {
+                                name: "Login",
+                                request: {
+                                    method: "POST",
+                                    header: [{"key": "Content-Type", "value": "application/json"}],
+                                    url: {
+                                        raw: "{{baseUrl}}/auth/login",
+                                        host: ["{{baseUrl}}"],
+                                        path: ["auth", "login"]
+                                    },
+                                    body: {
+                                        mode: "raw",
+                                        raw: JSON.stringify({
+                                            email: "test@example.com",
+                                            password: "password123"
+                                        })
+                                    }
+                                }
+                            }
+                        ]
+                    }
+                ],
+                variable: [
+                    {
+                        key: "baseUrl",
+                        value: "http://localhost:3000/api"
+                    }
+                ]
+            };
+
+            const dataStr = JSON.stringify(collection, null, 2);
+            const dataBlob = new Blob([dataStr], {type: 'application/json'});
+            const url = URL.createObjectURL(dataBlob);
+            const link = document.createElement('a');
+            link.href = url;
+            link.download = 'ecommerce-api-collection.json';
+            link.click();
+            URL.revokeObjectURL(url);
+        }
+
+        function loadSampleData() {
+            // Load sample data into form fields
+            document.getElementById('authEmail').value = 'test@example.com';
+            document.getElementById('authPassword').value = 'password123';
+            document.getElementById('productName').value = 'Sample Product';
+            document.getElementById('productDescription').value = 'This is a sample product description';
+            document.getElementById('productPrice').value = '29.99';
+            document.getElementById('productCategory').value = 'Electronics';
+            document.getElementById('productStock').value = '100';
+            document.getElementById('shippingStreet').value = '123 Main St';
+            document.getElementById('shippingCity').value = 'New York';
+            document.getElementById('shippingState').value = 'NY';
+            document.getElementById('shippingZip').value = '10001';
+            document.getElementById('shippingCountry').value = 'USA';
+            
+            showResponse({ status: 'success', message: 'Sample data loaded into form fields' });
+        }
+
+        // Initialize form on page load
+        document.addEventListener('DOMContentLoaded', function() {
+            toggleFormFields();
+        });
+    </script>
+</body>
+</html>
