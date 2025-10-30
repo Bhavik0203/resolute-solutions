@@ -8,7 +8,10 @@ const paymentSchema = new mongoose.Schema({
   },
   transactionId: {
     type: String,
-    required: true
+    required: true,
+    default: function() {
+      return `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    }
   },
   amount: {
     type: Number,
@@ -37,8 +40,8 @@ const paymentSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Generate transaction ID before saving
-paymentSchema.pre('save', function(next) {
+// Ensure transactionId exists before validation
+paymentSchema.pre('validate', function(next) {
   if (!this.transactionId) {
     this.transactionId = `TXN-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
   }

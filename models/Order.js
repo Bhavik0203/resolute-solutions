@@ -30,7 +30,10 @@ const orderSchema = new mongoose.Schema({
   },
   orderNumber: {
     type: String,
-    required: true
+    required: true,
+    default: function() {
+      return `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
+    }
   },
   items: [orderItemSchema],
   totalAmount: {
@@ -69,8 +72,8 @@ const orderSchema = new mongoose.Schema({
   timestamps: true
 });
 
-// Generate order number before saving
-orderSchema.pre('save', function(next) {
+// Ensure order number exists before validation in any case
+orderSchema.pre('validate', function(next) {
   if (!this.orderNumber) {
     this.orderNumber = `ORD-${Date.now()}-${Math.random().toString(36).substr(2, 9).toUpperCase()}`;
   }

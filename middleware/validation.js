@@ -130,6 +130,13 @@ const mongoIdSchema = Joi.object({
   })
 });
 
+// Params schema for productId in route params
+const productIdParamSchema = Joi.object({
+  productId: Joi.string().pattern(/^[0-9a-fA-F]{24}$/).required().messages({
+    'string.pattern.base': 'Invalid product ID format'
+  })
+});
+
 // Validation middleware factory
 const validate = (schema, property = 'body') => {
   return (req, res, next) => {
@@ -159,6 +166,7 @@ module.exports = {
   orderQuerySchema,
   paginationSchema,
   mongoIdSchema,
+  productIdParamSchema,
   validate
 };
 

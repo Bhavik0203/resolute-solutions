@@ -55,8 +55,8 @@ router.post('/checkout', validate(checkoutSchema), async (req, res, next) => {
         totalAmount += product.price * cartItem.quantity;
       }
 
-      // Create order
-      const order = await Order.create([{
+      // Create order using save() so pre('save') runs and orderNumber is generated
+      const orderDoc = new Order({
         userId: req.user._id,
         items: orderItems,
         totalAmount,
@@ -64,7 +64,8 @@ router.post('/checkout', validate(checkoutSchema), async (req, res, next) => {
         paymentMethod,
         notes,
         status: 'PENDING_PAYMENT'
-      }], { session });
+      });
+      await orderDoc.save({ session });
 
       // Reserve stock for all products
       for (const cartItem of cart.items) {
@@ -86,8 +87,8 @@ router.post('/checkout', validate(checkoutSchema), async (req, res, next) => {
         status: 'success',
         message: 'Order created successfully. Please complete payment within 15 minutes.',
         data: {
-          order: order[0],
-          expiresAt: order[0].expiresAt
+          order: orderDoc,
+          expiresAt: orderDoc.expiresAt
         }
       });
     });
@@ -146,25 +147,27 @@ router.post('/:id/pay', validate(mongoIdSchema, 'params'), async (req, res, next
 
       if (!paymentSuccess) {
         // Payment failed - create failed payment record
-        await Payment.create([{
+        const failedPayment = new Payment({
           orderId: order._id,
           amount: order.totalAmount,
           status: 'FAILED',
           paymentMethod: order.paymentMethod,
           failureReason: 'Payment gateway declined transaction'
-        }], { session });
+        });
+        await failedPayment.save({ session });
 
         throw new AppError('Payment failed. Please try again.', 400);
       }
 
       // Payment successful - create success payment record
-      const payment = await Payment.create([{
+      const paymentDoc = new Payment({
         orderId: order._id,
         amount: order.totalAmount,
         status: 'SUCCESS',
         paymentMethod: order.paymentMethod,
         gatewayResponse: { transactionId: `TXN-${Date.now()}` }
-      }], { session });
+      });
+      await paymentDoc.save({ session });
 
       // Update order status to PAID
       order.status = 'PAID';
@@ -204,7 +207,7 @@ router.post('/:id/pay', validate(mongoIdSchema, 'params'), async (req, res, next
             status: order.status,
             totalAmount: order.totalAmount
           },
-          payment: payment[0]
+          payment: paymentDoc
         }
       });
     });

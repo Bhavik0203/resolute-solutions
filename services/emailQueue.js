@@ -5,7 +5,14 @@ let emailQueue;
 
 // Initialize email queue
 const initializeEmailQueue = () => {
-  emailQueue = new Queue('email queue', process.env.REDIS_URL || 'redis://localhost:6379');
+  // Allow disabling queue when REDIS_URL is not provided (local/dev without Redis)
+  if (!process.env.REDIS_URL) {
+    console.warn('Email queue disabled: REDIS_URL is not set. Emails will be logged only.');
+    emailQueue = null;
+    return;
+  }
+
+  emailQueue = new Queue('email queue', process.env.REDIS_URL);
 
   // Process email jobs
   emailQueue.process('send-email', async (job) => {
@@ -13,7 +20,7 @@ const initializeEmailQueue = () => {
 
     try {
       // Create email transporter
-      const transporter = nodemailer.createTransporter({
+      const transporter = nodemailer.createTransport({
         host: process.env.EMAIL_HOST || 'smtp.gmail.com',
         port: process.env.EMAIL_PORT || 587,
         secure: false,
@@ -129,8 +136,10 @@ const initializeEmailQueue = () => {
 
 // Add email job to queue
 const addEmailJob = async (emailData) => {
+  // If queue is disabled, just log and return a mock result
   if (!emailQueue) {
-    throw new Error('Email queue not initialized');
+    console.log('Email queue disabled. Would send email:', emailData);
+    return { id: 'mock-job', data: emailData };
   }
 
   try {
@@ -148,7 +157,8 @@ const addEmailJob = async (emailData) => {
     return job;
   } catch (error) {
     console.error('Failed to add email job to queue:', error);
-    throw error;
+    // Fail gracefully in local/dev
+    return { id: 'mock-job-error', data: emailData, error: error.message };
   }
 };
 

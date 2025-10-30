@@ -2,7 +2,7 @@ const express = require('express');
 const Cart = require('../models/Cart');
 const Product = require('../models/Product');
 const { authenticate, authorizeUser } = require('../middleware/auth');
-const { validate, cartItemSchema, mongoIdSchema } = require('../middleware/validation');
+const { validate, cartItemSchema, mongoIdSchema, productIdParamSchema } = require('../middleware/validation');
 const { AppError } = require('../middleware/errorHandler');
 
 const router = express.Router();
@@ -102,7 +102,7 @@ router.post('/items', validate(cartItemSchema), async (req, res, next) => {
 });
 
 // PUT /api/cart/items/:productId - Update item quantity in cart
-router.put('/items/:productId', validate(mongoIdSchema, 'params'), async (req, res, next) => {
+router.put('/items/:productId', validate(productIdParamSchema, 'params'), async (req, res, next) => {
   try {
     const { productId } = req.params;
     const { quantity } = req.body;
@@ -180,7 +180,7 @@ router.put('/items/:productId', validate(mongoIdSchema, 'params'), async (req, r
 });
 
 // DELETE /api/cart/items/:productId - Remove item from cart
-router.delete('/items/:productId', validate(mongoIdSchema, 'params'), async (req, res, next) => {
+router.delete('/items/:productId', validate(productIdParamSchema, 'params'), async (req, res, next) => {
   try {
     const { productId } = req.params;
 
