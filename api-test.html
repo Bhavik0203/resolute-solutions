@@ -1146,10 +1146,14 @@
                 const page = document.getElementById('queryPage').value;
                 const limit = document.getElementById('queryLimit').value;
                 const status = document.getElementById('orderStatus').value;
+                const sort = document.getElementById('querySort').value;
+                const order = document.getElementById('queryOrder').value;
 
                 if (page) params.append('page', page);
                 if (limit) params.append('limit', limit);
                 if (status) params.append('status', status);
+                if (sort) params.append('sort', sort);
+                if (order) params.append('order', order);
 
                 const response = await fetch(`${getBaseUrl()}/orders?${params}`, {
                     method: 'GET',
@@ -1273,9 +1277,13 @@
                 const params = new URLSearchParams();
                 const page = document.getElementById('queryPage').value;
                 const limit = document.getElementById('queryLimit').value;
+                const sort = document.getElementById('querySort').value;
+                const order = document.getElementById('queryOrder').value;
 
                 if (page) params.append('page', page);
                 if (limit) params.append('limit', limit);
+                if (sort) params.append('sort', sort);
+                if (order) params.append('order', order);
 
                 const response = await fetch(`${getBaseUrl()}/admin/users?${params}`, {
                     method: 'GET',
@@ -1299,9 +1307,13 @@
                 const params = new URLSearchParams();
                 const page = document.getElementById('queryPage').value;
                 const limit = document.getElementById('queryLimit').value;
+                const sort = document.getElementById('querySort').value;
+                const order = document.getElementById('queryOrder').value;
 
                 if (page) params.append('page', page);
                 if (limit) params.append('limit', limit);
+                if (sort) params.append('sort', sort);
+                if (order) params.append('order', order);
 
                 const response = await fetch(`${getBaseUrl()}/admin/products?${params}`, {
                     method: 'GET',
@@ -1327,11 +1339,15 @@
                 const limit = document.getElementById('queryLimit').value;
                 const status = document.getElementById('orderStatus').value;
                 const userId = document.getElementById('adminUserId').value;
+                const sort = document.getElementById('querySort').value;
+                const order = document.getElementById('queryOrder').value;
 
                 if (page) params.append('page', page);
                 if (limit) params.append('limit', limit);
                 if (status) params.append('status', status);
                 if (userId) params.append('userId', userId);
+                if (sort) params.append('sort', sort);
+                if (order) params.append('order', order);
 
                 const response = await fetch(`${getBaseUrl()}/admin/orders?${params}`, {
                     method: 'GET',

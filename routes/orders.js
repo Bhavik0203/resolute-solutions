@@ -15,12 +15,39 @@ const router = express.Router();
 router.use(authenticate);
 router.use(authorizeUser);
 
+// Helper function to run operations with transaction support, falls back to non-transactional if replica set is not available
+async function runWithTransaction(callback) {
+  let session = null;
+  try {
+    session = await mongoose.startSession();
+    // Try to use transaction
+    await session.withTransaction(async () => {
+      await callback(session);
+    });
+  } catch (error) {
+    // If transaction fails due to replica set issue, retry without transaction
+    if (error.message && error.message.includes('Transaction numbers are only allowed on a replica set member or mongos')) {
+      console.warn('MongoDB replica set not available, running without transactions');
+      if (session) {
+        await session.endSession();
+        session = null;
+      }
+      // Retry without transaction
+      await callback(null);
+    } else {
+      throw error;
+    }
+  } finally {
+    if (session) {
+      await session.endSession();
+    }
+  }
+}
+
 // POST /api/orders/checkout - Create order from cart
 router.post('/checkout', validate(checkoutSchema), async (req, res, next) => {
-  const session = await mongoose.startSession();
-  
   try {
-    await session.withTransaction(async () => {
+    await runWithTransaction(async (session) => {
       const { shippingAddress, paymentMethod, notes } = req.body;
 
       // Get user's cart
@@ -65,22 +92,30 @@ router.post('/checkout', validate(checkoutSchema), async (req, res, next) => {
         notes,
         status: 'PENDING_PAYMENT'
       });
-      await orderDoc.save({ session });
+      
+      // Save with or without session based on availability
+      if (session) {
+        await orderDoc.save({ session });
+      } else {
+        await orderDoc.save();
+      }
 
       // Reserve stock for all products
       for (const cartItem of cart.items) {
+        const updateOptions = session ? { session } : {};
         await Product.findByIdAndUpdate(
           cartItem.productId._id,
           { $inc: { reservedStock: cartItem.quantity } },
-          { session }
+          updateOptions
         );
       }
 
       // Clear the cart
+      const cartUpdateOptions = session ? { session } : {};
       await Cart.findByIdAndUpdate(
         cart._id,
         { items: [], totalItems: 0, totalAmount: 0 },
-        { session }
+        cartUpdateOptions
       );
 
       res.status(201).json({
@@ -94,21 +129,19 @@ router.post('/checkout', validate(checkoutSchema), async (req, res, next) => {
     });
   } catch (error) {
     next(error);
-  } finally {
-    await session.endSession();
   }
 });
 
 // POST /api/orders/:id/pay - Process payment
 router.post('/:id/pay', validate(mongoIdSchema, 'params'), async (req, res, next) => {
-  const session = await mongoose.startSession();
-  
   try {
-    await session.withTransaction(async () => {
+    await runWithTransaction(async (session) => {
       const orderId = req.params.id;
 
       // Find order
-      const order = await Order.findById(orderId).session(session);
+      const order = session 
+        ? await Order.findById(orderId).session(session)
+        : await Order.findById(orderId);
       
       if (!order) {
         throw new AppError('Order not found', 404);
@@ -119,27 +152,44 @@ router.post('/:id/pay', validate(mongoIdSchema, 'params'), async (req, res, next
         throw new AppError('Unauthorized access to order', 403);
       }
 
-      // Check if order is in correct status
-      if (order.status !== 'PENDING_PAYMENT') {
-        throw new AppError('Order is not in pending payment status', 400);
-      }
-
-      // Check if order is expired
-      if (order.isExpired()) {
+      // Check if order is expired first (before status check)
+      if (order.status === 'PENDING_PAYMENT' && order.isExpired()) {
         // Cancel expired order and release reserved stock
         order.status = 'CANCELLED';
-        await order.save({ session });
+        if (session) {
+          await order.save({ session });
+        } else {
+          await order.save();
+        }
 
         // Release reserved stock
         for (const item of order.items) {
+          const updateOptions = session ? { session } : {};
           await Product.findByIdAndUpdate(
             item.productId,
             { $inc: { reservedStock: -item.quantity } },
-            { session }
+            updateOptions
           );
         }
 
         throw new AppError('Order has expired and been cancelled', 400);
+      }
+
+      // Check if order is in correct status with detailed error message
+      if (order.status !== 'PENDING_PAYMENT') {
+        let errorMessage = `Cannot process payment. Order status is: ${order.status}`;
+        
+        if (order.status === 'PAID') {
+          errorMessage = 'Order has already been paid';
+        } else if (order.status === 'CANCELLED') {
+          errorMessage = 'Order has been cancelled';
+        } else if (order.status === 'SHIPPED') {
+          errorMessage = 'Order has already been shipped';
+        } else if (order.status === 'DELIVERED') {
+          errorMessage = 'Order has already been delivered';
+        }
+        
+        throw new AppError(errorMessage, 400);
       }
 
       // Simulate payment processing (in real app, integrate with payment gateway)
@@ -154,7 +204,11 @@ router.post('/:id/pay', validate(mongoIdSchema, 'params'), async (req, res, next
           paymentMethod: order.paymentMethod,
           failureReason: 'Payment gateway declined transaction'
         });
-        await failedPayment.save({ session });
+        if (session) {
+          await failedPayment.save({ session });
+        } else {
+          await failedPayment.save();
+        }
 
         throw new AppError('Payment failed. Please try again.', 400);
       }
@@ -167,14 +221,23 @@ router.post('/:id/pay', validate(mongoIdSchema, 'params'), async (req, res, next
         paymentMethod: order.paymentMethod,
         gatewayResponse: { transactionId: `TXN-${Date.now()}` }
       });
-      await paymentDoc.save({ session });
+      if (session) {
+        await paymentDoc.save({ session });
+      } else {
+        await paymentDoc.save();
+      }
 
       // Update order status to PAID
       order.status = 'PAID';
-      await order.save({ session });
+      if (session) {
+        await order.save({ session });
+      } else {
+        await order.save();
+      }
 
       // Move reserved stock to actual stock reduction
       for (const item of order.items) {
+        const updateOptions = session ? { session } : {};
         await Product.findByIdAndUpdate(
           item.productId,
           { 
@@ -183,7 +246,7 @@ router.post('/:id/pay', validate(mongoIdSchema, 'params'), async (req, res, next
               reservedStock: -item.quantity 
             }
           },
-          { session }
+          updateOptions
         );
       }
 
@@ -213,8 +276,6 @@ router.post('/:id/pay', validate(mongoIdSchema, 'params'), async (req, res, next
     });
   } catch (error) {
     next(error);
-  } finally {
-    await session.endSession();
   }
 });
 
@@ -315,27 +376,28 @@ setInterval(async () => {
     });
 
     for (const order of expiredOrders) {
-      const session = await mongoose.startSession();
-      
       try {
-        await session.withTransaction(async () => {
+        await runWithTransaction(async (session) => {
           // Update order status
           order.status = 'CANCELLED';
-          await order.save({ session });
+          if (session) {
+            await order.save({ session });
+          } else {
+            await order.save();
+          }
 
           // Release reserved stock
           for (const item of order.items) {
+            const updateOptions = session ? { session } : {};
             await Product.findByIdAndUpdate(
               item.productId,
               { $inc: { reservedStock: -item.quantity } },
-              { session }
+              updateOptions
             );
           }
         });
       } catch (error) {
         console.error('Error cancelling expired order:', error);
-      } finally {
-        await session.endSession();
       }
     }
   } catch (error) {
